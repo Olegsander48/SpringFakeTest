@@ -12,7 +12,6 @@ public class Message implements Base<Integer> {
         return id;
     }
 
-    @Override
     public void setId(Integer id) {
         this.id = id;
     }
