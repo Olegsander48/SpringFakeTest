@@ -2,12 +2,19 @@ package org.springframework.test.fake;
 
 import java.util.Objects;
 
-public class Message implements Base<Integer> {
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
+@Entity
+public class Message {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
 
-    @Override
     public Integer getId() {
         return id;
     }

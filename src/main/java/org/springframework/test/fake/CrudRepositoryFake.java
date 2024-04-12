@@ -1,17 +1,38 @@
 package org.springframework.test.fake;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import org.springframework.data.repository.CrudRepository;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public abstract class CrudRepositoryFake<T extends Base<ID>, ID> implements CrudRepository<T, ID> {
+public abstract class CrudRepositoryFake<T, ID> implements CrudRepository<T, ID> {
     protected final Map<ID, T> memory = new HashMap<>();
+
+    private <S> ID getId(S entity) {
+        try {
+            var cl = entity.getClass();
+            for (var field : cl.getDeclaredFields()) {
+                for (var annotation : field.getDeclaredAnnotations()) {
+                    if (annotation instanceof Id) {
+                        field.setAccessible(true);
+                        return (ID) field.get(entity);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        throw new IllegalStateException("Entity does not count @Id field.");
+    }
 
     @Override
     public <S extends T> S save(S entity) {
-        memory.put(entity.getId(), entity);
+        memory.put(getId(entity), entity);
         return entity;
     }
 
@@ -53,7 +74,7 @@ public abstract class CrudRepositoryFake<T extends Base<ID>, ID> implements Crud
 
     @Override
     public void delete(T entity) {
-        memory.remove(entity.getId());
+        memory.remove(getId(entity));
     }
 
     @Override
